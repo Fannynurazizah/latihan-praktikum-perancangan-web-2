@@ -1,0 +1,29 @@
+
+session_start();require_once __DIR__.'/../koneksi.php';
+if (
+    !isset($_SESSION['user']) ||
+    !isset($_SESSION['user']['id_role']) ||
+    (int)$_SESSION['user']['id_role'] != 1
+) {
+    exit('AKSES DITOLAK');
+}
+
+$items=db_fetch_all('SELECT * FROM barang ORDER BY id_barang DESC');
+$total=array_sum(array_map(fn($x)=>(int)$x['stok'],$items));
+?>
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laporan Barang</title><link rel="stylesheet" href="../style.css"></head><body>
+<?php include __DIR__.'/header.php';?>
+<div class="layout"><?php include __DIR__.'/sidebar.php';?><main class="container">
+<h2>Laporan Barang</h2>
+<div class="card"><div style="overflow:auto"><table style="width:100%"><thead><tr><th>ID</th><th>Nama</th><th>Stok</th><th>Harga</th></tr></thead><tbody>
+<?php foreach($items as $i){echo '<tr><td>'.(int)$i['id_barang'].'</td><td>'.htmlspecialchars($i['nama_barang']).'</td><td>'.(int)$i['stok'].'</td><td>Rp '.number_format($i['harga'],0,',','.').'</td></tr>'; } if(!$items){echo '<tr><td colspan="4" class="muted">Tidak ada barang.</td></tr>'; }?>
+</tbody></table></div></div>
+<div class="card"><strong>Total Stok: </strong><?php echo (int)$total;?></div>
+<div class="card">
+    <form method="post" action="/sewa_dekorasiii/pemilik/eksport_laporan.php">
+        <button type="submit" name="export_pdf">
+            Export PDF & Kirim Email
+        </button>
+    </form>
+</div>
+</main></div><script src="../script.js"></script></body></html>
